@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"fmt"
 	"time"
+	"net/http/httputil"
 )
 
 func main() {
@@ -24,9 +25,16 @@ type Response struct {
 }
 
 func PromptHandler(w http.ResponseWriter, r *http.Request) {
+	x, err := httputil.DumpRequest(r, true)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(string(x))
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Transfer-Encoding", "chunked")
-	
+
 	list :=[]string{"This", "is", "a", "test"}
 	for i,e := range list {
 		enc := json.NewEncoder(w)
