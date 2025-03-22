@@ -6,7 +6,8 @@ import (
 	"log"
 	"net/http"
 	"fmt"
-	"time"
+	"bufio"
+	"bytes"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
     http.Handle("/", r)
 
 	fmt.Println("Server running on :8080")
-    log.Fatal(http.ListenAndServe(":2345", nil))
+    log.Fatal(http.ListenAndServe(":2346", nil))
 }
 
 type Response struct {
@@ -23,17 +24,26 @@ type Response struct {
 	Done bool  `json:"done"`
 }
 
+type Request struct {
+	Model string `json:"model"`
+	Prompt string `json:"prompt"`
+}
+
 func PromptHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Transfer-Encoding", "chunked")
 
-	list :=[]string{"This", "is", "a", "test"}
-	for i,e := range list {
-		enc := json.NewEncoder(w)
-		enc.Encode(Response{Response: e, Done: i == len(list)-1})
-		if f, ok := w.(http.Flusher); ok {
-			f.Flush()
-		}
-		time.Sleep(time.Second)
+	b, _ := json.Marshal(Request{Model: "gemma3:1b", Prompt: "Can you give me stats on wills valorant performance"})
+	rd := bytes.NewReader(b)
+
+	req, _ := http.NewRequest(http.MethodPost, "http://localhost:11434/api/generate", rd)
+ 	res, _ := http.DefaultClient.Do(req)
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		foo := make(map[string]interface{})
+		_ = json.Unmarshal([]byte(scanner.Text()), &foo)
+		// Do something with foo
+		fmt.Println(foo)
 	}
 }
