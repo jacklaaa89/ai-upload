@@ -31,6 +31,7 @@ export default function ChatMessage({ message, isStreaming = false, onDeleteMess
   const [promptSent, setPromptSent] = useState(false);
   const [canvasSent, setCanvasSent] = useState(false);
   const isMountedRef = useRef(true);
+  const [timeString, setTimeString] = useState('');
   
   // Cleanup on unmount
   useEffect(() => {
@@ -53,6 +54,12 @@ export default function ChatMessage({ message, isStreaming = false, onDeleteMess
       typingRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [message.content, isUser, isStreaming]);
+
+  // Format time consistently across server and client
+  useEffect(() => {
+    // Only run this on the client after hydration
+    setTimeString(new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  }, [message.timestamp]);
 
   // CSS for animating the typing dots
   const typingAnimationCSS = `
@@ -311,7 +318,7 @@ export default function ChatMessage({ message, isStreaming = false, onDeleteMess
           )}
           
           <div className="text-xs text-gray-500 mt-2 flex justify-between items-center">
-            <span>{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            <span suppressHydrationWarning>{timeString || new Date(message.timestamp).toISOString().substring(11, 16)}</span>
             {message.model && !isUser && (
               <span className="flex items-center ml-2 bg-gray-200 px-2 py-0.5 rounded-full">
                 <FaRobot className="mr-1" size={10} />
