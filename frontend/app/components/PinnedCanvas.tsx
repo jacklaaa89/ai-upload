@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { FaTimes, FaEdit, FaExpand, FaCompress, FaThumbtack } from 'react-icons/fa';
-import SyntaxHighlightRenderer from './SyntaxHighlightRenderer';
-import LatexRenderer from './LatexRenderer';
-import Canvas from './Canvas';
+import { useState } from "react";
+import {
+  FaCompress,
+  FaEdit,
+  FaExpand,
+  FaThumbtack,
+  FaTimes,
+} from "react-icons/fa";
+import Canvas from "./Canvas";
+import LatexRenderer from "./LatexRenderer";
+import SyntaxHighlightRenderer from "./SyntaxHighlightRenderer";
 
 interface PinnedCanvasProps {
   id: string;
@@ -13,22 +19,27 @@ interface PinnedCanvasProps {
   onRequestRefinement: (content: string, request: string) => void;
 }
 
-export default function PinnedCanvas({ id, content, onRemove, onRequestRefinement }: PinnedCanvasProps) {
+export default function PinnedCanvas({
+  id,
+  content,
+  onRemove,
+  onRequestRefinement,
+}: PinnedCanvasProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isFullCanvas, setIsFullCanvas] = useState(false);
-  
+
   // Simplified content rendering for the preview
   const renderContent = () => {
     // Check if content has code blocks or LaTeX
-    if (content.includes('```')) {
+    if (content.includes("```")) {
       return <SyntaxHighlightRenderer content={content} />;
-    } else if (content.includes('$')) {
+    } else if (content.includes("$")) {
       return <LatexRenderer content={content} />;
     } else {
       return <div className="whitespace-pre-wrap text-sm">{content}</div>;
     }
   };
-  
+
   return (
     <>
       <div className="sticky top-4 mt-4 mb-8 rounded-md border border-blue-200 bg-blue-50 shadow-sm overflow-hidden pinned-canvas">
@@ -38,7 +49,7 @@ export default function PinnedCanvas({ id, content, onRemove, onRequestRefinemen
             Pinned Canvas
           </h3>
           <div className="flex space-x-1">
-            <button 
+            <button
               onClick={() => setIsMinimized(!isMinimized)}
               className="p-1 text-blue-500 hover:text-blue-700 rounded"
               title={isMinimized ? "Expand" : "Minimize"}
@@ -61,7 +72,7 @@ export default function PinnedCanvas({ id, content, onRemove, onRequestRefinemen
             </button>
           </div>
         </div>
-        
+
         {!isMinimized && (
           <div className="p-3 max-h-96 overflow-auto canvas-container">
             <div className="prose prose-sm max-w-none dark:prose-invert">
@@ -70,7 +81,7 @@ export default function PinnedCanvas({ id, content, onRemove, onRequestRefinemen
           </div>
         )}
       </div>
-      
+
       {isFullCanvas && (
         <Canvas
           content={content}
@@ -82,4 +93,4 @@ export default function PinnedCanvas({ id, content, onRemove, onRequestRefinemen
       )}
     </>
   );
-} 
+}

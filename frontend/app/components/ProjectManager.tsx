@@ -1,10 +1,19 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Project, ProjectFile, GenericContext } from '../types';
-import { FaTimes, FaPlus, FaFolder, FaFolderOpen, FaEdit, FaTrash, FaFile, FaFileUpload } from 'react-icons/fa';
-import { FaEllipsisVertical } from 'react-icons/fa6';
-import ContextEditor from './ContextEditor';
+import React, { useState } from "react";
+import {
+  FaEdit,
+  FaFile,
+  FaFileUpload,
+  FaFolder,
+  FaFolderOpen,
+  FaPlus,
+  FaTimes,
+  FaTrash,
+} from "react-icons/fa";
+import { FaEllipsisVertical } from "react-icons/fa6";
+import { GenericContext, Project, ProjectFile } from "../types";
+import ContextEditor from "./ContextEditor";
 
 interface ProjectManagerProps {
   projects: Project[];
@@ -23,22 +32,24 @@ export default function ProjectManager({
   onDeleteProject,
   onSelectProject,
   isOpen,
-  onClose
+  onClose,
 }: ProjectManagerProps) {
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectDescription, setNewProjectDescription] = useState('');
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectDescription, setNewProjectDescription] = useState("");
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [isContextEditorOpen, setIsContextEditorOpen] = useState(false);
-  const [contextMenuProject, setContextMenuProject] = useState<string | null>(null);
+  const [contextMenuProject, setContextMenuProject] = useState<string | null>(
+    null
+  );
   const [uploadingFiles, setUploadingFiles] = useState(false);
 
   if (!isOpen) return null;
 
   const handleCreateProject = () => {
     if (!newProjectName.trim()) return;
-    
+
     const newProject: Project = {
       id: Date.now().toString(),
       name: newProjectName,
@@ -46,12 +57,12 @@ export default function ProjectManager({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       context: { enabled: false, items: [] },
-      files: []
+      files: [],
     };
-    
+
     onCreateProject(newProject);
-    setNewProjectName('');
-    setNewProjectDescription('');
+    setNewProjectName("");
+    setNewProjectDescription("");
     setIsCreatingProject(false);
     setActiveProject(newProject);
   };
@@ -66,66 +77,75 @@ export default function ProjectManager({
 
   const handleRenameProject = (projectId: string, newName: string) => {
     if (!newName.trim()) return;
-    
-    const projectToUpdate = projects.find(p => p.id === projectId);
+
+    const projectToUpdate = projects.find((p) => p.id === projectId);
     if (!projectToUpdate) return;
-    
+
     const updatedProject = {
       ...projectToUpdate,
       name: newName,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
-    
+
     onUpdateProject(updatedProject);
-    
+
     if (activeProject && activeProject.id === projectId) {
       setActiveProject(updatedProject);
     }
-    
+
     setIsEditingProject(false);
     setContextMenuProject(null);
   };
 
   const handleContextChange = (newContext: GenericContext) => {
     if (!activeProject) return;
-    
+
     const updatedProject = {
       ...activeProject,
       context: newContext,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
-    
+
     onUpdateProject(updatedProject);
     setActiveProject(updatedProject);
     setIsContextEditorOpen(false);
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!activeProject || !event.target.files || event.target.files.length === 0) return;
-    
+    if (
+      !activeProject ||
+      !event.target.files ||
+      event.target.files.length === 0
+    )
+      return;
+
     setUploadingFiles(true);
-    
-    const filePromises = Array.from(event.target.files).map(file => {
+
+    const filePromises = Array.from(event.target.files).map((file) => {
       return new Promise<ProjectFile>((resolve) => {
         // Create a URL for the file preview if it's an image
-        const isImage = file.type.startsWith('image/');
+        const isImage = file.type.startsWith("image/");
         const previewUrl = isImage ? URL.createObjectURL(file) : undefined;
-        
+
         // In a real app, you'd upload the file to a server here
         // For this demo, we'll just create a local file object
         const projectFile: ProjectFile = {
           id: `${Date.now()}-${file.name}`,
           name: file.name,
           type: file.type,
-          url: previewUrl || '#', // In a real app, this would be the server URL
+          url: previewUrl || "#", // In a real app, this would be the server URL
           previewUrl,
           size: file.size,
-          uploadedAt: new Date().toISOString()
+          uploadedAt: new Date().toISOString(),
         };
-        
+
         // For text files, store the content
-        if (file.type.includes('text') || file.name.endsWith('.txt') ||
-            file.name.endsWith('.md') || file.name.endsWith('.json')) {
+        if (
+          file.type.includes("text") ||
+          file.name.endsWith(".txt") ||
+          file.name.endsWith(".md") ||
+          file.name.endsWith(".json")
+        ) {
           const reader = new FileReader();
           reader.onload = (e) => {
             projectFile.content = e.target?.result as string;
@@ -137,32 +157,32 @@ export default function ProjectManager({
         }
       });
     });
-    
-    Promise.all(filePromises).then(newFiles => {
+
+    Promise.all(filePromises).then((newFiles) => {
       const updatedProject = {
         ...activeProject,
         files: [...activeProject.files, ...newFiles],
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
-      
+
       onUpdateProject(updatedProject);
       setActiveProject(updatedProject);
       setUploadingFiles(false);
     });
-    
+
     // Reset the file input
-    event.target.value = '';
+    event.target.value = "";
   };
 
   const handleDeleteFile = (fileId: string) => {
     if (!activeProject) return;
-    
+
     const updatedProject = {
       ...activeProject,
-      files: activeProject.files.filter(file => file.id !== fileId),
-      updatedAt: new Date().toISOString()
+      files: activeProject.files.filter((file) => file.id !== fileId),
+      updatedAt: new Date().toISOString(),
     };
-    
+
     onUpdateProject(updatedProject);
     setActiveProject(updatedProject);
   };
@@ -178,18 +198,20 @@ export default function ProjectManager({
           <FaPlus className="mr-1" size={12} /> New Project
         </button>
       </div>
-      
+
       {projects.length === 0 ? (
-        <div className="text-gray-500 text-sm">No projects yet. Create your first project to get started.</div>
+        <div className="text-gray-500 text-sm">
+          No projects yet. Create your first project to get started.
+        </div>
       ) : (
         <div className="space-y-1 max-h-60 overflow-y-auto">
-          {projects.map(project => (
-            <div 
+          {projects.map((project) => (
+            <div
               key={project.id}
               className={`flex justify-between items-center p-2 rounded-md cursor-pointer group ${
-                activeProject?.id === project.id 
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'hover:bg-gray-100'
+                activeProject?.id === project.id
+                  ? "bg-blue-100 text-blue-800"
+                  : "hover:bg-gray-100"
               }`}
               onClick={() => setActiveProject(project)}
             >
@@ -206,12 +228,14 @@ export default function ProjectManager({
                   className="p-1 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setContextMenuProject(contextMenuProject === project.id ? null : project.id);
+                    setContextMenuProject(
+                      contextMenuProject === project.id ? null : project.id
+                    );
                   }}
                 >
                   <FaEllipsisVertical size={14} />
                 </button>
-                
+
                 {contextMenuProject === project.id && (
                   <div className="absolute right-0 mt-1 bg-white shadow-md rounded-md z-10 border border-gray-200 py-1 w-36">
                     <button
@@ -272,7 +296,9 @@ export default function ProjectManager({
     return (
       <div className="space-y-4">
         <div>
-          <h3 className="font-medium text-gray-800 mb-1">{activeProject.name}</h3>
+          <h3 className="font-medium text-gray-800 mb-1">
+            {activeProject.name}
+          </h3>
           <p className="text-gray-600 text-sm">
             {activeProject.description || "No description provided"}
           </p>
@@ -288,20 +314,34 @@ export default function ProjectManager({
               onClick={() => setIsContextEditorOpen(true)}
               className="text-blue-600 hover:text-blue-800 text-sm"
             >
-              {activeProject.context.items.length > 0 
-                ? "Edit Context" 
+              {activeProject.context.items.length > 0
+                ? "Edit Context"
                 : "Add Context"}
             </button>
           </div>
-          
-          {activeProject.context.enabled && activeProject.context.items.length > 0 ? (
+
+          {activeProject.context.enabled &&
+          activeProject.context.items.length > 0 ? (
             <div className="text-sm">
-              <div className={`p-2 rounded ${activeProject.context.enabled ? 'bg-green-50 text-green-800' : 'bg-gray-50 text-gray-600'}`}>
-                {activeProject.context.enabled ? "Enabled" : "Disabled"} with {activeProject.context.items.filter(item => item.enabled).length} active item(s)
+              <div
+                className={`p-2 rounded ${
+                  activeProject.context.enabled
+                    ? "bg-green-50 text-green-800"
+                    : "bg-gray-50 text-gray-600"
+                }`}
+              >
+                {activeProject.context.enabled ? "Enabled" : "Disabled"} with{" "}
+                {
+                  activeProject.context.items.filter((item) => item.enabled)
+                    .length
+                }{" "}
+                active item(s)
               </div>
             </div>
           ) : (
-            <div className="text-gray-500 text-sm">No context defined for this project</div>
+            <div className="text-gray-500 text-sm">
+              No context defined for this project
+            </div>
           )}
         </div>
 
@@ -319,19 +359,25 @@ export default function ProjectManager({
               Upload Files
             </label>
           </div>
-          
+
           {uploadingFiles ? (
             <div className="text-gray-600 text-sm">Uploading files...</div>
           ) : activeProject.files.length > 0 ? (
             <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-              {activeProject.files.map(file => (
-                <div key={file.id} className="flex items-center justify-between p-2 border rounded-md hover:bg-gray-50">
+              {activeProject.files.map((file) => (
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between p-2 border rounded-md hover:bg-gray-50"
+                >
                   <div className="flex items-center max-w-[80%]">
                     <div className="flex-shrink-0 mr-2">
                       <FaFile className="text-gray-500" />
                     </div>
                     <div className="truncate">
-                      <div className="font-medium text-sm truncate" title={file.name}>
+                      <div
+                        className="font-medium text-sm truncate"
+                        title={file.name}
+                      >
                         {file.name}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -350,7 +396,9 @@ export default function ProjectManager({
               ))}
             </div>
           ) : (
-            <div className="text-gray-500 text-sm">No files uploaded to this project</div>
+            <div className="text-gray-500 text-sm">
+              No files uploaded to this project
+            </div>
           )}
         </div>
 
@@ -374,7 +422,10 @@ export default function ProjectManager({
     <div className="space-y-4">
       <h3 className="font-medium text-gray-800">Create New Project</h3>
       <div>
-        <label htmlFor="projectName" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="projectName"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Project Name
         </label>
         <input
@@ -387,7 +438,10 @@ export default function ProjectManager({
         />
       </div>
       <div>
-        <label htmlFor="projectDescription" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="projectDescription"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Description (optional)
         </label>
         <textarea
@@ -411,8 +465,8 @@ export default function ProjectManager({
           disabled={!newProjectName.trim()}
           className={`px-3 py-1.5 text-sm font-medium text-white rounded ${
             newProjectName.trim()
-              ? 'bg-blue-600 hover:bg-blue-700'
-              : 'bg-gray-400 cursor-not-allowed'
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-gray-400 cursor-not-allowed"
           }`}
         >
           Create Project
@@ -425,7 +479,10 @@ export default function ProjectManager({
     <div className="space-y-4">
       <h3 className="font-medium text-gray-800">Edit Project</h3>
       <div>
-        <label htmlFor="editProjectName" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="editProjectName"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Project Name
         </label>
         <input
@@ -438,7 +495,10 @@ export default function ProjectManager({
         />
       </div>
       <div>
-        <label htmlFor="editProjectDescription" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="editProjectDescription"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Description
         </label>
         <textarea
@@ -462,8 +522,8 @@ export default function ProjectManager({
           disabled={!newProjectName.trim()}
           className={`px-3 py-1.5 text-sm font-medium text-white rounded ${
             newProjectName.trim()
-              ? 'bg-blue-600 hover:bg-blue-700'
-              : 'bg-gray-400 cursor-not-allowed'
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-gray-400 cursor-not-allowed"
           }`}
         >
           Save Changes
@@ -477,32 +537,31 @@ export default function ProjectManager({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl font-semibold">Project Manager</h2>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <FaTimes size={20} />
           </button>
         </div>
-        
+
         <div className="flex-1 overflow-hidden flex">
           {/* Left panel: project list */}
           <div className="w-1/3 p-4 border-r overflow-y-auto">
             {renderProjectList()}
           </div>
-          
+
           {/* Right panel: project details or creation form */}
           <div className="w-2/3 p-4 overflow-y-auto">
-            {isCreatingProject 
+            {isCreatingProject
               ? renderCreateProject()
               : isEditingProject && activeProject
-                ? renderEditProject()
-                : renderProjectDetails()
-            }
+              ? renderEditProject()
+              : renderProjectDetails()}
           </div>
         </div>
       </div>
-      
+
       {activeProject && isContextEditorOpen && (
         <ContextEditor
           context={activeProject.context}
@@ -513,4 +572,4 @@ export default function ProjectManager({
       )}
     </div>
   );
-} 
+}

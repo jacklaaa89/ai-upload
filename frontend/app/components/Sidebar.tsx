@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-import { FaFolderOpen } from 'react-icons/fa6';
+import React, { useEffect, useRef, useState } from "react";
+import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
+import { FaFolderOpen } from "react-icons/fa6";
 
 interface SidebarProps {
   conversations: { id: string; name: string }[];
@@ -24,12 +24,11 @@ export default function Sidebar({
   onDeleteConversation,
   onRenameConversation,
   onOpenProjectManager,
-  activeProjectId,
-  activeProjectName
+  activeProjectName,
 }: SidebarProps) {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState('');
+  const [editingName, setEditingName] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -41,9 +40,9 @@ export default function Sidebar({
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -56,7 +55,7 @@ export default function Sidebar({
 
   const toggleMenu = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setMenuOpenId(prev => (prev === id ? null : id));
+    setMenuOpenId((prev) => (prev === id ? null : id));
   };
 
   const startEditing = (id: string, name: string, e: React.MouseEvent) => {
@@ -91,22 +90,27 @@ export default function Sidebar({
           New Conversation
         </button>
       </div>
-      
+
       {/* Active Project Section */}
       <div className="px-4 py-3 border-b border-gray-700">
-        <div className="mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Current Project</div>
-        <div 
+        <div className="mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">
+          Current Project
+        </div>
+        <div
           className="flex items-center justify-between bg-gray-700 rounded-md p-2 cursor-pointer hover:bg-gray-600"
           onClick={onOpenProjectManager}
         >
           <div className="flex items-center overflow-hidden">
-            <FaFolderOpen className="mr-2 text-blue-400 flex-shrink-0" size={16} />
+            <FaFolderOpen
+              className="mr-2 text-blue-400 flex-shrink-0"
+              size={16}
+            />
             <span className="truncate">
-              {activeProjectName || 'No Project Selected'}
+              {activeProjectName || "No Project Selected"}
             </span>
           </div>
-          <button 
-            className="text-gray-400 hover:text-white p-1" 
+          <button
+            className="text-gray-400 hover:text-white p-1"
             onClick={(e) => {
               e.stopPropagation();
               onOpenProjectManager();
@@ -116,10 +120,12 @@ export default function Sidebar({
           </button>
         </div>
       </div>
-      
+
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto p-3">
-        <div className="mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Conversations</div>
+        <div className="mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">
+          Conversations
+        </div>
         <div className="space-y-1">
           {conversations.map((conversation) => (
             <div key={conversation.id} className="relative group">
@@ -138,8 +144,8 @@ export default function Sidebar({
                 <div
                   className={`flex items-center justify-between py-2 px-3 rounded-md cursor-pointer ${
                     activeConversation === conversation.id
-                      ? 'bg-gray-700 text-white'
-                      : 'text-gray-300 hover:bg-gray-700'
+                      ? "bg-gray-700 text-white"
+                      : "text-gray-300 hover:bg-gray-700"
                   }`}
                   onClick={() => onSelectConversation(conversation.id)}
                 >
@@ -171,7 +177,9 @@ export default function Sidebar({
                       <div className="py-1">
                         <button
                           className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 flex items-center"
-                          onClick={(e) => startEditing(conversation.id, conversation.name, e)}
+                          onClick={(e) =>
+                            startEditing(conversation.id, conversation.name, e)
+                          }
                         >
                           <FaEdit className="mr-2" size={12} />
                           Rename
@@ -192,7 +200,7 @@ export default function Sidebar({
           ))}
         </div>
       </div>
-      
+
       {/* Projects Button */}
       <div className="p-4 border-t border-gray-700">
         <button
@@ -205,4 +213,4 @@ export default function Sidebar({
       </div>
     </div>
   );
-} 
+}
